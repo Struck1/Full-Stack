@@ -1,15 +1,14 @@
+import { observer } from "mobx-react-lite";
 import React, { useState } from "react";
 import { ChangeEvent } from "react";
 import { Button, Form, Segment } from "semantic-ui-react";
-import { Activity } from "../../../app/models/activity";
+import { useStore } from "../../../app/store/store";
 
-interface Props {
-  activity: Activity | undefined;
-  formClose: () => void;
-}
+export default observer(function ActivityForm() {
+  const { activityStore } = useStore();
+  const { createActivity, updateActivity, loading } = activityStore;
 
-export default function ActivityForm({ activity, formClose }: Props) {
-  const initalState = activity ?? {
+  const initalState = activityStore.selectActivity ?? {
     id: "",
     title: "",
     date: "",
@@ -22,7 +21,7 @@ export default function ActivityForm({ activity, formClose }: Props) {
   const [firstValue, setFirstValue] = useState(initalState);
 
   function handleSubmit() {
-    console.log(firstValue);
+    firstValue.id ? updateActivity(firstValue) : createActivity(firstValue);
   }
 
   function handleInputChange(
@@ -49,21 +48,26 @@ export default function ActivityForm({ activity, formClose }: Props) {
         />
         <Form.Input
           placeholder='Date'
+          name='date'
           value={firstValue.date}
           onChange={handleInputChange}
+          type='date'
         />
         <Form.Input
           placeholder='Category'
+          name='category'
           value={firstValue.category}
           onChange={handleInputChange}
         />
         <Form.Input
           placeholder='Venue'
+          name='venue'
           value={firstValue.venue}
           onChange={handleInputChange}
         />
         <Form.Input
           placeholder='City'
+          name='city'
           value={firstValue.city}
           onChange={handleInputChange}
         />
@@ -72,9 +76,9 @@ export default function ActivityForm({ activity, formClose }: Props) {
           floated='right'
           type='button'
           content='Cancel'
-          onClick={() => formClose()}
+          onClick={() => activityStore.closeForm()}
         />
       </Form>
     </Segment>
   );
-}
+});
