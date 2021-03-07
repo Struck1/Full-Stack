@@ -1,14 +1,16 @@
 import { observer } from "mobx-react-lite";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ChangeEvent } from "react";
+import { useParams } from "react-router";
 import { Button, Form, Segment } from "semantic-ui-react";
 import { useStore } from "../../../app/store/store";
 
 export default observer(function ActivityForm() {
+  const { id } = useParams<{ id: string }>();
   const { activityStore } = useStore();
-  const { createActivity, updateActivity, loading } = activityStore;
+  const { createActivity, updateActivity, loadActivity } = activityStore;
 
-  const initalState = activityStore.selectActivity ?? {
+  const [firstValue, setFirstValue] = useState({
     id: "",
     title: "",
     date: "",
@@ -16,9 +18,12 @@ export default observer(function ActivityForm() {
     category: "",
     city: "",
     venue: "",
-  };
+  });
 
-  const [firstValue, setFirstValue] = useState(initalState);
+  console.log(firstValue);
+  useEffect(() => {
+    if (id) loadActivity(id).then((activity) => setFirstValue(activity!));
+  }, [id, loadActivity]);
 
   function handleSubmit() {
     firstValue.id ? updateActivity(firstValue) : createActivity(firstValue);
@@ -72,12 +77,7 @@ export default observer(function ActivityForm() {
           onChange={handleInputChange}
         />
         <Button floated='right' positive type='submit' content='Submit' />
-        <Button
-          floated='right'
-          type='button'
-          content='Cancel'
-          onClick={() => activityStore.closeForm()}
-        />
+        <Button floated='right' type='button' content='Cancel' />
       </Form>
     </Segment>
   );

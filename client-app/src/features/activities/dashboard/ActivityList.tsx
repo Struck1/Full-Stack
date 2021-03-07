@@ -1,6 +1,7 @@
 import { observer } from "mobx-react-lite";
 import React, { useState } from "react";
 import { SyntheticEvent } from "react";
+import { Link } from "react-router-dom";
 import { Button, Item, Label, Segment } from "semantic-ui-react";
 import { Activity } from "../../../app/models/activity";
 import { useStore } from "../../../app/store/store";
@@ -18,8 +19,6 @@ export default observer(function ActivityList() {
     setTarget(e.currentTarget.name);
     deleteActivity(id);
   }
-
-  console.log(activities.slice());
 
   let sortedDate: Activity[] = [];
   sortedDate = activities
@@ -42,10 +41,8 @@ export default observer(function ActivityList() {
               </Item.Description>
               <Item.Extra>
                 <Button
-                  onClick={() => {
-                    activityStore.selectedActivity(activity.id);
-                    activityStore.closeForm();
-                  }}
+                  as={Link}
+                  to={`/activities/${activity.id}`}
                   floated='right'
                   color='blue'
                 >

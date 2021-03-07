@@ -16,44 +16,52 @@ export default class ActivityStore{
     constructor(){
         makeAutoObservable(this)
     }
-
     loadActivities = async () => {
-        this.setLoadingInital(true);
         try {
             const activities = await agent.Activities.list();
             activities.forEach((activity) => {
-                activity.date = activity.date.split("T")[0];
-                 this.activities.push(activity);
-              });
-        this.setLoadingInital(false);
+              this.setActivity(activity);
+              });    
         } catch (error) {
-            console.log(error)
-            this.setLoadingInital(false);
+            console.log(error)     
         }
+    }
+
+    loadActivity = async (id:string) => {
+        let activity = this.getActivity(id);
+        if(activity){
+            this.selectActivity = activity;
+            return activity
+        }else{
+            this.loadingInital = true;
+            try {
+                activity = await agent.Activities.details(id);
+                this.setActivity(activity);
+                runInAction(()=> {
+                    this.selectActivity = activity
+                })
+               
+                return activity;
+                
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    }
+
+    private getActivity = (id: string) => {
+        return this.activities.find(a => a.id === id);
+    }
+
+    private setActivity = (activity:Activity) => {
+        activity.date = activity.date.split("T")[0];
+        this.activities.push(activity);
     }
 
     setLoadingInital = (state: boolean)=> {
         this.loadingInital= state
     }
 
-    selectedActivity = (id: string) => {
-        
-        this.selectActivity = this.activities.find(x => x.id === id);
-    }
-
-    cancelSelectedActivity = () => {
-        
-        this.selectActivity = undefined;
-    }
-
-    openForm = (id?:string) => {
-        id ? this.selectedActivity(id) : this.cancelSelectedActivity();
-        this.editMode = true;
-    }
-
-    closeForm = () => {
-        this.editMode = false;
-    }
 
     createActivity = async (activity: Activity) => {
         this.loading=true;
@@ -99,7 +107,6 @@ export default class ActivityStore{
             await agent.Activities.delete(id)
             runInAction(() => {
                 this.activities = [...this.activities.filter(a => a.id !== id)]
-                if(this.selectActivity?.id ===id) this.cancelSelectedActivity()
                 this.loading=false;
             })
         } catch (error) {
